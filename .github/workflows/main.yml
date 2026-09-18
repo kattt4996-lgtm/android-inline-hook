@@ -8,34 +8,40 @@ on:
 jobs:
   build-android-arm64:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
           ndk-version: r26b
           add-to-path: true
-      
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.0.2'
+
       - name: Build ShadowHook
         run: |
+          cmake --version
           cd shadowhook/src/main/cpp/
           mkdir -p build-android-arm64
           cd build-android-arm64
-          
+
           cmake .. \
             -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-24 \
             -DCMAKE_BUILD_TYPE=Release
-          
+
           make -j$(nproc)
-      
+
       - name: Find artifacts
         run: |
           echo "=== Cari libshadowhook ==="
@@ -43,21 +49,22 @@ jobs:
           echo ""
           echo "=== Isi build folder ==="
           ls -la shadowhook/src/main/cpp/build-android-arm64/
-      
+
       - name: Package artifacts
         run: |
           mkdir -p output/lib/arm64-v8a
           mkdir -p output/include
-          
+
           find shadowhook/src/main/cpp/build-android-arm64 -name "libshadowhook*.so" -exec cp {} output/lib/arm64-v8a/ \;
           cp shadowhook/src/main/cpp/include/shadowhook.h output/include/
-          
+
           echo "=== Hasil packaging ==="
           find output -type f
-      
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: shadowhook-android-arm64
           path: output/
           retention-days: 30
+          
