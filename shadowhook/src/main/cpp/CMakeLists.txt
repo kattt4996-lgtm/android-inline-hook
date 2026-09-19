@@ -34,4 +34,4 @@ find_program(LLVM_OBJCOPY_PATH NAMES "llvm-objcopy" PATHS ${ANDROID_NDK}/toolcha
 if(LLVM_OBJCOPY_PATH)
     add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${LLVM_OBJCOPY_PATH} --remove-section=.comment --remove-section=.ARM.attributes $<TARGET_FILE:${TARGET}>)
 endif()
-w
+
